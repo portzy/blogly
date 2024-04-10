@@ -1,6 +1,6 @@
 import unittest
 from app import app, db
-from models import User, Post
+from models import User, Post, Tag
 
 class BloglyTestCase(unittest.TestCase):
     def setUp(self):
@@ -65,10 +65,29 @@ class BloglyTestCase(unittest.TestCase):
             response = self.client.get(f'/posts/{post.id}')
             self.assertIn('This is a test.', response.get_data(as_text=True))
     
+    def test_tag_list_page(self):
+        """Test displaying the tag list."""
+        with app.app_context():
+            new_tag = Tag(name='Your Tag Name')
+            db.session.add(new_tag)
+            db.session.commit()
+        response = self.client.get('/tags')
+        self.assertIn('Your Tag Name', response.get_data(as_text=True))
+
+    def test_add_new_tag(self):
+            """Test adding a new tag."""
+            response = self.client.post('/tags/new', data={'name': 'New Tag', 'posts': []}, follow_redirects=True)
+            self.assertIn('New Tag', response.get_data(as_text=True))
+
+    def test_tag_detail_page(self):
+            """Test display of the tag detail page."""
+            with app.app_context():
+                new_tag = Tag(name='Detail Tag')
+                db.session.add(new_tag)
+                db.session.commit()
+                response = self.client.get(f'/tags/{new_tag.id}')
+                self.assertIn('Detail Tag', response.get_data(as_text=True))
             
-
-
-
 
 if __name__ == '__main__':
     unittest.main()

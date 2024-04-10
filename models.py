@@ -5,10 +5,6 @@ from datetime import datetime
 
 db = SQLAlchemy()
 
-def connect_db(app):
-    db.app = app
-    db.init_app(app)
-
 
 class User(db.Model):
     __tablename__ = 'users'
@@ -39,6 +35,33 @@ class Post(db.Model):
         """Return nicely-formatted date."""
 
         return self.created_at.strftime("%a %b %-d  %Y, %-I:%M %p")
+    
+class PostTag(db.Model):
+    """manages many2many rs between posts and tags."""
+    __tablename__ = 'posts_tags'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    post_id = db.Column(db.Integer, 
+                        db.ForeignKey('posts.id'),
+                        primary_key=True, )
+    tag_id = db.Column(db.Integer, 
+                       db.ForeignKey('tags.id'),
+                       primary_key=True)
+
+class Tag(db.Model):
+    __tablename__ = 'tags'
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    name = db.Column(db.String, unique= True, nullable=False)
+
+    posts = db.relationship(
+        'Post',
+        secondary='posts_tags', 
+        backref='tags',
+    )
+
+def connect_db(app):
+    db.app = app
+    db.init_app(app)
+
 
 
 
